@@ -1,2 +1,2 @@
 # project
-backend project
+FastApi CRUD with mysql
