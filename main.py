@@ -3,7 +3,7 @@ from schemas.car import car
 from config.db import con
 from models.cars import cars
 app = FastAPI()
-@app.get('/details')
+@app.get('/api/cars')
 async def message():
    data=con.execute(cars.select()).fetchall()
    return {
@@ -11,37 +11,44 @@ async def message():
        "data": data
    }
 #data insertion
-@app.post('/details')
+@app.post('/api/cars')
 async def store(car:car):
-    data=con.execute(cars.insert().values(
-        id = car.id,
-        car_name=car.car_name,
-        model=car.model,
-        price_in_lakh = car.price_in_lakh,
-    ))
-
-    if data.is_insert:
-        return {
-            "success": True,
-            "msg":"car details successfull"
-        }
+    data1 = con.execute(cars.select().where(cars.c.registration_no==car.registration_no)).fetchall()
+    if(len(data1)==0):
+        data = con.execute(cars.insert().values(
+            registration_no=car.registration_no,
+            car_name=car.car_name,
+            model=car.model,
+            price_in_lakh=car.price_in_lakh,
+        ))
+        if data.is_insert:
+            return {
+                         "success": True,
+                         "msg": "car details successfull"
+                   }
+        else:
+            return {
+                      "success": False,
+                      "msg": "problem"
+                   }
     else:
-        return{
-            "success": False,
-            "msg": "problem"
-        }
+        return "registration_no already exists"
+
+
+
+
 
 
 #data updation
 
-@app.put('/api/details/{id}')
-async def update(id:int,car:car):
+@app.put('/api/cars/{car_name}')
+async def update(car_name:str,car:car):
     data=con.execute(cars.update().values(
-        id=car.id,
+        registration_no=car.registration_no,
         car_name=car.car_name,
         model=car.model,
         price_in_lakh=car.price_in_lakh,
-    ).where(cars.c.id==id))
+    ).where(cars.c.car_name==car_name))
     if data:
         return {
             "success": True,
@@ -55,9 +62,9 @@ async def update(id:int,car:car):
 
 #delete
 
-@app.delete('/details/{id}')
-async def delete(id:int):
-    data=con.execute(cars.delete().where(cars.c.id==id))
+@app.delete('/api/cars/{car_name}')
+async def delete(car_name:str):
+    data=con.execute(cars.delete().where(cars.c.car_name==car_name))
     if data:
         return {
             "success": True,
