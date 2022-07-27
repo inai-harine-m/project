@@ -14,7 +14,7 @@ async def message():
 @app.post('/api/cars')
 async def store(car:car):
     data1 = con.execute(cars.select().where(cars.c.registration_no==car.registration_no)).fetchall()
-    if(len(data1)==0):
+    if(len(data1)==0):                                   #if already exist registration_no is not inserted
         data = con.execute(cars.insert().values(
             registration_no=car.registration_no,
             car_name=car.car_name,
@@ -42,13 +42,13 @@ async def store(car:car):
 #data updation
 
 @app.put('/api/cars/{car_name}')
-async def update(car_name:str,car:car):
+async def update(registration_no:str, car:car):
     data=con.execute(cars.update().values(
         registration_no=car.registration_no,
         car_name=car.car_name,
         model=car.model,
         price_in_lakh=car.price_in_lakh,
-    ).where(cars.c.car_name==car_name))
+    ).where(cars.c.registration_no==registration_no))
     if data:
         return {
             "success": True,
@@ -63,8 +63,8 @@ async def update(car_name:str,car:car):
 #delete
 
 @app.delete('/api/cars/{car_name}')
-async def delete(car_name:str):
-    data=con.execute(cars.delete().where(cars.c.car_name==car_name))
+async def delete(registration_no:str):
+    data=con.execute(cars.delete().where(cars.c.registration_no==registration_no))
     if data:
         return {
             "success": True,
